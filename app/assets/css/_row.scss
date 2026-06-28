@@ -1,0 +1,118 @@
+// assets/css/_row.scss
+// Shared initiative row styles — imported by PCRow and NPCRow
+
+.init-row {
+    display: flex;
+    align-items: center;
+    height: 82px;
+    flex-shrink: 0;
+    padding: 0 12px 0 0;
+    cursor: pointer;
+    @include separator(bottom);
+    transition: background 0.1s;
+
+    &:hover:not(.init-row--active) {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    &--active {
+        background: $burnt-faint;
+    }
+
+    &--selected {
+        background  : $burnt-faint;
+        border-left : 3px solid $burnt-light;
+
+        .init-row__stripe { display: none; }
+        .init-row__num    { color: $burnt-light; }
+    }
+
+    // ── Left stripe ───────────────────────────────────────────
+    &__stripe {
+        width: 3px;
+        align-self: stretch;
+        flex-shrink: 0;
+    }
+
+    &--active &__stripe { background: $burnt-light; }
+
+    // ── Initiative number ─────────────────────────────────────
+    &__num {
+        font-family: $font-display;
+        font-size: 22px;
+        font-weight: 700;
+        width: 42px;
+        text-align: center;
+        flex-shrink: 0;
+        color: $text-dim;
+        line-height: 1;
+    }
+
+    &--active &__num { color: $burnt-light; }
+
+    // ── Name block ────────────────────────────────────────────
+    &__info {
+        flex: 1;
+        padding: 0 10px;
+        overflow: hidden;
+    }
+
+    &__name {
+        display: block;
+        font-family: $font-display;
+        font-size: 13px;
+        font-weight: 700;
+        color: $text-bright;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+    }
+
+    &__sub {
+        display: block;
+        font-size: 9px;
+        color: $text-dim;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-top: 2px;
+    }
+
+    // ── Condition pips ────────────────────────────────────────
+    &__pips {
+        display: flex;
+        gap: 3px;
+        margin-top: 5px;
+        flex-wrap: wrap;
+    }
+
+    &__pip {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: $text-dim;
+
+        &--concentrating { background: #4080A0; }
+        &--poisoned      { background: #50C050; }
+        &--prone         { background: #D09040; }
+        &--charmed       { background: #C090E0; }
+        &--frightened    { background: #E07040; }
+        &--invisible     { background: #60A0C0; }
+        &--paralysed     { background: #D060B0; }
+        &--stunned       { background: #5090C0; }
+        &--unconscious   { background: #A05050; }
+        &--grappled      { background: #90B040; }
+        &--incapacitated { background: #C04040; }
+        &--blinded       { background: #A0A0A0; }
+        &--petrified     { background: #A0A080; }
+        &--restrained    { background: #C08050; }
+    }
+
+    // ── Right block ───────────────────────────────────────────
+    &__right {
+        flex-shrink: 0;
+        text-align: right;
+        min-width: 68px;
+    }
+}

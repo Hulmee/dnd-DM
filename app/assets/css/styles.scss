@@ -1,0 +1,156 @@
+// ============================================================
+//  D&D Initiative Tracker — Global Styles
+//  Dulux Monument + Burnt Earth palette
+// ============================================================
+
+
+// ── Fonts ────────────────────────────────────────────────────
+//  Loaded via nuxt.config.ts head link tags.
+//  Referenced here as variables for consistency.
+$font-display : 'Cinzel', serif;
+$font-mono    : 'JetBrains Mono', monospace;
+
+
+// ── Colour tokens ────────────────────────────────────────────
+
+// Dulux Monument — dark cool charcoal
+$monument       : #3A3A38;
+$monument-dark  : #272725;
+$monument-mid   : #484846;
+$monument-lite  : #626260;
+
+// Dulux Burnt Earth — warm terracotta
+$burnt          : #8B4A2F;
+$burnt-light    : #B05A38;
+$burnt-dim      : #5C2E18;
+$burnt-faint    : rgba(139, 74, 47, 0.12);
+
+// Text hierarchy
+$text-bright    : #EDE5DB;
+$text-mid       : #A89888;
+$text-dim       : #686058;
+
+// HP states
+$hp-ok          : #6FA35A;
+$hp-hurt        : #C49030;
+$hp-crit        : #B03C3C;
+
+// Type stripes
+$pc-stripe      : #4A7A98;
+$npc-stripe     : #5C2E18;
+
+
+// ── CSS custom properties ────────────────────────────────────
+//  Exposed as vars so scoped component styles can reference
+//  them without importing the SCSS file in every component.
+:root {
+  --monument      : #{$monument};
+  --monument-dark : #{$monument-dark};
+  --monument-mid  : #{$monument-mid};
+  --monument-lite : #{$monument-lite};
+
+  --burnt         : #{$burnt};
+  --burnt-light   : #{$burnt-light};
+  --burnt-dim     : #{$burnt-dim};
+  --burnt-faint   : #{$burnt-faint};
+
+  --text-bright   : #{$text-bright};
+  --text-mid      : #{$text-mid};
+  --text-dim      : #{$text-dim};
+
+  --hp-ok         : #{$hp-ok};
+  --hp-hurt       : #{$hp-hurt};
+  --hp-crit       : #{$hp-crit};
+
+  --pc-stripe     : #{$pc-stripe};
+  --npc-stripe    : #{$npc-stripe};
+}
+
+
+// ── Reset ────────────────────────────────────────────────────
+*,
+*::before,
+*::after {
+  box-sizing  : border-box;
+  margin      : 0;
+  padding     : 0;
+}
+
+html,
+body {
+  background              : $monument-dark;
+  color                   : $text-bright;
+  font-family             : $font-mono;
+  -webkit-font-smoothing  : antialiased;
+  -moz-osx-font-smoothing : grayscale;
+}
+
+button {
+  font-family : inherit;
+  cursor      : pointer;
+  border      : none;
+  background  : none;
+}
+
+input,
+select,
+textarea {
+  font-family : $font-mono;
+  color       : $text-bright;
+  outline     : none;
+}
+
+textarea {
+  resize : none;
+}
+
+
+// ── Mixins ───────────────────────────────────────────────────
+
+/// Uppercase label used throughout the UI
+@mixin eyebrow($size: 9px) {
+  font-size      : $size;
+  letter-spacing : 0.2em;
+  text-transform : uppercase;
+  color          : $text-dim;
+}
+
+/// Display heading in Cinzel
+@mixin display($size: 14px) {
+  font-family : $font-display;
+  font-weight : 700;
+  font-size   : $size;
+  color       : $text-bright;
+}
+
+/// HP bar base — used in multiple components
+@mixin hp-bar($height: 8px, $radius: 4px) {
+  height        : $height;
+  border-radius : $radius;
+  overflow      : hidden;
+}
+
+/// Thin border separator used between columns / rows
+@mixin separator($dir: bottom) {
+  border-#{$dir} : 1px solid $monument-mid;
+}
+
+
+// ── Utility classes ──────────────────────────────────────────
+
+// HP colour states
+.col-ok   { color: $hp-ok; }
+.col-hurt { color: $hp-hurt; }
+.col-crit { color: $hp-crit; }
+
+// HP fill states (for bar elements)
+.fill-ok   { background: $hp-ok; }
+.fill-hurt { background: $hp-hurt; }
+.fill-crit { background: $hp-crit; }
+
+// Font shortcuts
+.font-display { font-family: $font-display; }
+.font-mono    { font-family: $font-mono; }
+
+// Eyebrow label
+.label-eyebrow { @include eyebrow; }
