@@ -40,7 +40,8 @@ const showAddModal = ref(false)
 
         <header class="topbar">
             <div class="topbar__left">
-                <span class="topbar__title">⚔ Initiative Tracker</span>
+                <NuxtLink to="/Characters" class="topbar__title">⚔ Initiative Tracker</NuxtLink>
+                <!-- <span class="topbar__title">⚔ Initiative Tracker</span> -->
             </div>
 
             <div class="topbar__centre">
@@ -120,6 +121,8 @@ const showAddModal = ref(false)
         @include display(14px);
         letter-spacing: 0.12em;
         text-transform: uppercase;
+        text-decoration: none;
+
     }
 
     &__centre {

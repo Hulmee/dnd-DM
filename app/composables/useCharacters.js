@@ -48,6 +48,27 @@ const _encounter = reactive(savedEncounter ? JSON.parse(savedEncounter) : []);
 const maxUid = _encounter.reduce((m, e) => Math.max(m, e.uid), 0);
 let nextUid = maxUid ? maxUid + 1 : 5;
 
+// ── Saved encounter templates ─────────────────────────────────────────────────
+// Each entry: { id, title, names: [characterName, ...] }
+// Names reference the character store — no stats stored, set on load.
+const savedEncountersRaw =
+  typeof window !== "undefined"
+    ? localStorage.getItem("dnd_saved_encounters")
+    : null;
+
+const savedEncounters = reactive(
+  savedEncountersRaw ? JSON.parse(savedEncountersRaw) : [],
+);
+
+function persistEncounters() {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(
+      "dnd_saved_encounters",
+      JSON.stringify(savedEncounters),
+    );
+  }
+}
+
 // ── Listen for updates from other tabs ───────────────────────────────────────
 if (channel) {
   channel.onmessage = ({ data }) => {
@@ -85,7 +106,7 @@ const availableCharacters = computed(() =>
 // ── Actions ───────────────────────────────────────────────────────────────────
 // NOTE: Change all instances of `broadcast()` to `saveAndBroadcast()` inside your functions below
 
-function addToEncounter(name, initiative, tokenNum = null) {
+function addToEncounter(name, initiative) {
   const char = characters[name];
   if (!char) return;
   _encounter.push({
@@ -98,7 +119,6 @@ function addToEncounter(name, initiative, tokenNum = null) {
     initiative,
     conditions: [],
     active: false,
-    tokenNum,
   });
   saveAndBroadcast(); // Updated
 }
@@ -132,16 +152,70 @@ function nextTurn() {
   saveAndBroadcast(); // Updated
 }
 
+// ── Saved encounter actions ───────────────────────────────────────────────────
+
+function saveEncounter(title, names) {
+  // names = array of character names from the store
+  if (!title.trim() || !names.length) return;
+  savedEncounters.push({
+    id: Date.now(),
+    title: title.trim(),
+    names: [...names],
+  });
+  persistEncounters();
+}
+
+function deleteEncounter(id) {
+  const idx = savedEncounters.findIndex((e) => e.id === id);
+  if (idx !== -1) savedEncounters.splice(idx, 1);
+  persistEncounters();
+}
+
+// loadEncounter is called after the user has set initiative + tokenNum per combatant.
+// entries = [{ name, initiative, tokenNum }]
+// mode = 'replace' | 'merge'
+function loadEncounter(entries, mode) {
+  if (mode === "replace") {
+    _encounter.splice(0, _encounter.length);
+  }
+  entries.forEach(({ name, initiative, tokenNum }) => {
+    const char = characters[name];
+    if (!char) return;
+    _encounter.push({
+      uid: nextUid++,
+      name,
+      type: char.type,
+      ac: char.ac,
+      healthMax: char.healthMax,
+      healthCur: char.healthMax,
+      initiative,
+      conditions: [],
+      active: false,
+      tokenNum: char.type === "NPC" ? tokenNum || null : null,
+    });
+  });
+  saveAndBroadcast();
+}
+
+function deleteCharacter(name) {
+  delete characters[name];
+  saveAndBroadcast();
+}
 // ── Composable ────────────────────────────────────────────────────────────────
 export function useCharacters() {
   return {
     characters,
     encounter,
     availableCharacters,
+    savedEncounters,
     addToEncounter,
     removeFromEncounter,
     createCharacter,
     nextTurn,
     endCombat,
+    saveEncounter,
+    deleteEncounter,
+    loadEncounter,
+    deleteCharacter,
   };
 }
