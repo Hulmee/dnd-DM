@@ -12,6 +12,34 @@ const {
     deleteEncounter,
 } = useCharacters()
 
+// ── Open5e monster search ───────────────────────────────────────
+const {
+    results: monsterResults,
+    loading: monsterLoading,
+    error: monsterError,
+    hasSearched: monsterHasSearched,
+    search: searchMonsters,
+    toCharacterStats,
+} = useMonsterSearch()
+
+const monsterQuery = ref('')
+const importingKey = ref(null)  // key of monster currently being imported (disables its button)
+const importedKeys = ref(new Set())  // keys already imported this session
+
+watch(monsterQuery, (q) => searchMonsters(q))
+
+function importMonster(creature) {
+    if (characters[creature.name]) {
+        // Name collision — still let them try, createCharacter will no-op safely
+        importingKey.value = creature.key
+    }
+    importingKey.value = creature.key
+    const stats = toCharacterStats(creature)
+    createCharacter(creature.name, stats)
+    importedKeys.value.add(creature.key)
+    importingKey.value = null
+}
+
 // ── Sorted character list ─────────────────────────────────────
 const sortedCharacters = computed(() =>
     Object.entries(characters).sort(([, a], [, b]) => {
@@ -278,6 +306,53 @@ const loadingEncounter = ref(null) // the encounter template being loaded
             </div>
 
             <div v-if="filtered.length === 0 && !showAdd" class="char-empty">No characters found.</div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════
+             OPEN5E MONSTER SEARCH SECTION
+        ══════════════════════════════════════════════════ -->
+        <div class="section-divider">
+            <span class="section-divider__label">Search Open5e (2024 SRD)</span>
+        </div>
+
+        <div class="monster-search">
+            <input v-model="monsterQuery" class="form-input monster-search__input" type="text"
+                placeholder="Search monster name, e.g. Goblin…" />
+
+            <div v-if="monsterLoading" class="monster-search__status">Searching…</div>
+            <div v-else-if="monsterError" class="monster-search__status monster-search__status--err">{{ monsterError }}
+            </div>
+            <div v-else-if="monsterHasSearched && monsterResults.length === 0" class="monster-search__status">
+                No monsters found for "{{ monsterQuery }}".
+            </div>
+
+            <div v-if="monsterResults.length" class="monster-results">
+                <div v-for="creature in monsterResults" :key="creature.key" class="monster-row">
+                    <div class="monster-row__stripe" />
+                    <div class="monster-row__info">
+                        <span class="monster-row__name">{{ creature.name }}</span>
+                        <span class="monster-row__meta">
+                            {{ creature.type?.name }} · {{ creature.size?.name }} · CR {{ creature.challenge_rating }}
+                        </span>
+                    </div>
+                    <div class="monster-row__stats">
+                        <div class="char-stat">
+                            <span class="char-stat__label">AC</span>
+                            <span class="char-stat__val">{{ creature.armor_class }}</span>
+                        </div>
+                        <div class="char-stat">
+                            <span class="char-stat__label">HP</span>
+                            <span class="char-stat__val">{{ creature.hit_points }}</span>
+                        </div>
+                    </div>
+                    <button class="row-btn"
+                        :class="importedKeys.has(creature.key) ? 'row-btn--imported' : 'row-btn--edit'"
+                        :disabled="importedKeys.has(creature.key) || importingKey === creature.key"
+                        @click="importMonster(creature)">
+                        {{ importedKeys.has(creature.key) ? '✓ Imported' : '↓ Import' }}
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- ══════════════════════════════════════════════════
@@ -832,6 +907,92 @@ const loadingEncounter = ref(null) // the encounter template being loaded
         color: $text-bright;
         letter-spacing: 0.05em;
     }
+}
+
+// ── Open5e monster search ───────────────────────────────────────
+.monster-search {
+    padding: 0 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    &__input {
+        max-width: 360px;
+    }
+
+    &__status {
+        font-size: 11px;
+        color: $text-dim;
+        padding: 4px 2px;
+
+        &--err {
+            color: $hp-crit;
+        }
+    }
+}
+
+.monster-results {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.monster-row {
+    display: flex;
+    align-items: center;
+    background: $monument;
+    border-radius: 4px;
+    border: 1px solid $monument-mid;
+    overflow: hidden;
+
+    &__stripe {
+        width: 4px;
+        align-self: stretch;
+        flex-shrink: 0;
+        background: $npc-stripe;
+    }
+
+    &__info {
+        flex: 1;
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        overflow: hidden;
+    }
+
+    &__name {
+        font-family: $font-display;
+        font-size: 14px;
+        font-weight: 700;
+        color: $text-bright;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__meta {
+        font-size: 9px;
+        color: $text-dim;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    &__stats {
+        display: flex;
+        gap: 16px;
+        padding: 0 14px;
+        flex-shrink: 0;
+    }
+}
+
+.row-btn--imported {
+    background: rgba($hp-ok, 0.12);
+    color: $hp-ok;
+    border-color: transparent;
+    cursor: default;
 }
 
 // ── New encounter form ────────────────────────────────────────

@@ -12,14 +12,25 @@ const mode = ref(null) // 'replace' | 'merge'
 // ── Step 2 — per-combatant initiative + token ─────────────────
 // Build an entry row for each name in the template.
 // Characters missing from the store are flagged.
+// _key is needed because the same name can appear multiple times (e.g. 3x Spider).
+const nameCounters = {}
 const entries = ref(
-    props.encounter.names.map(name => ({
-        name,
-        exists: !!characters[name],
-        type: characters[name]?.type ?? 'NPC',
-        initiative: 10,
-        tokenNum: null,
-    }))
+    props.encounter.names.map((name, idx) => {
+        const type = characters[name]?.type ?? 'NPC'
+        let tokenNum = null
+        if (type === 'NPC') {
+            nameCounters[name] = (nameCounters[name] || 0) + 1
+            tokenNum = nameCounters[name]
+        }
+        return {
+            _key: `${name}-${idx}`,
+            name,
+            exists: !!characters[name],
+            type,
+            initiative: 10,
+            tokenNum,
+        }
+    })
 )
 
 const missingNames = computed(() => entries.value.filter(e => !e.exists).map(e => e.name))
@@ -69,7 +80,7 @@ function confirm() {
                     </div>
 
                     <div class="entry-list">
-                        <div v-for="entry in entries" :key="entry.name" class="entry-row"
+                        <div v-for="entry in entries" :key="entry._key" class="entry-row"
                             :class="{ 'entry-row--missing': !entry.exists }">
                             <div class="entry-row__info">
                                 <span class="entry-row__name">{{ entry.name }}</span>

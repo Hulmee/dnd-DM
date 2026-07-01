@@ -119,8 +119,11 @@ function addToEncounter(name, initiative) {
     initiative,
     conditions: [],
     active: false,
+    // Carried from the character store so the DM stats panel can render
+    // actions/traits without re-fetching from Open5e during the session.
+    meta: char.meta ?? null,
   });
-  saveAndBroadcast(); // Updated
+  saveAndBroadcast();
 }
 
 function removeFromEncounter(uid) {
@@ -129,10 +132,48 @@ function removeFromEncounter(uid) {
   saveAndBroadcast(); // Updated
 }
 
-function createCharacter(name, { type, ac, healthMax }) {
+function createCharacter(
+  name,
+  { type, ac, healthMax, source, sourceKey, ruleset, meta },
+) {
   if (characters[name]) return;
-  characters[name] = { type, ac, healthMax };
-  saveAndBroadcast(); // Updated
+  characters[name] = {
+    type,
+    ac,
+    healthMax,
+    // Optional Open5e provenance — undefined for manually created characters
+    source: source ?? null,
+    sourceKey: sourceKey ?? null,
+    ruleset: ruleset ?? null,
+    // Extra stat block data (actions, traits, saves, etc.) shown in the DM stats panel.
+    // Saved once on import so we never re-fetch from Open5e during a session.
+    meta: meta ?? null,
+  };
+  saveAndBroadcast();
+}
+
+function updateCharacter(oldName, newName, { type, ac, healthMax }) {
+  // Preserve existing meta/source info when editing basic fields
+  const existing = characters[oldName] ?? {};
+  const updated = {
+    type,
+    ac,
+    healthMax,
+    source: existing.source ?? null,
+    sourceKey: existing.sourceKey ?? null,
+    ruleset: existing.ruleset ?? null,
+    meta: existing.meta ?? null,
+  };
+  if (oldName !== newName) {
+    if (characters[newName])
+      return { ok: false, error: "A character with that name already exists." };
+    characters[newName] = updated;
+    delete characters[oldName];
+  } else {
+    characters[oldName] = updated;
+  }
+  saveAndBroadcast();
+  return { ok: true };
 }
 
 function nextTurn() {
@@ -192,6 +233,9 @@ function loadEncounter(entries, mode) {
       conditions: [],
       active: false,
       tokenNum: char.type === "NPC" ? tokenNum || null : null,
+      // Carried from the character store so the DM stats panel can render
+      // actions/traits without re-fetching from Open5e during the session.
+      meta: char.meta ?? null,
     });
   });
   saveAndBroadcast();
@@ -211,6 +255,7 @@ export function useCharacters() {
     addToEncounter,
     removeFromEncounter,
     createCharacter,
+    updateCharacter,
     nextTurn,
     endCombat,
     saveEncounter,

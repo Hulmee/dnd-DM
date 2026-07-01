@@ -40,8 +40,7 @@ const showAddModal = ref(false)
 
         <header class="topbar">
             <div class="topbar__left">
-                <NuxtLink to="/Characters" class="topbar__title">⚔ Initiative Tracker</NuxtLink>
-                <!-- <span class="topbar__title">⚔ Initiative Tracker</span> -->
+                <span class="topbar__title">⚔ Initiative Tracker</span>
             </div>
 
             <div class="topbar__centre">
@@ -54,6 +53,7 @@ const showAddModal = ref(false)
             </div>
 
             <div class="topbar__right">
+                <NuxtLink to="/characters" class="topbar__btn topbar__btn--data">⚙ Characters</NuxtLink>
                 <button class="topbar__btn topbar__btn--add" @click="showAddModal = true">＋ Add</button>
                 <button class="topbar__btn topbar__btn--next" @click="nextTurn">Next Turn ▶</button>
                 <button class="topbar__btn topbar__btn--end" @click="endCombat">End Combat</button>
@@ -74,14 +74,11 @@ const showAddModal = ref(false)
                 <DMCombatantcontrol :combatant="selectedCombatant" @damage="onDamage" @heal="onHeal" />
             </section>
 
-            <!-- <aside class="col col--conditions">
-                <div class="col__header">
-                    <span class="col__header-label">Conditions</span>
-                </div>
-                <div class="cond-active"></div>
-                <div class="cond-grid-wrap"></div>
-                <div class="notes-wrap"></div>
-            </aside> -->
+            <aside class="col col--conditions">
+                <!-- <MonsterStatsPanel :combatant="selectedCombatant" /> -->
+                <Monsterstatspanel :combatant="selectedCombatant" />
+                <!-- <pre>{{ selectedCombatant }}</pre> -->
+            </aside>
 
         </div>
 
@@ -121,8 +118,6 @@ const showAddModal = ref(false)
         @include display(14px);
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        text-decoration: none;
-
     }
 
     &__centre {
@@ -172,6 +167,12 @@ const showAddModal = ref(false)
 
         &:active {
             opacity: 0.75;
+        }
+
+        &--data {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.15);
         }
 
         &--add {
